@@ -22,6 +22,7 @@ import (
 	"github.com/charmbracelet/x/ansi"
 	"github.com/con-dog/clingon/internal/config"
 	"github.com/con-dog/clingon/internal/palette"
+	"github.com/con-dog/clingon/internal/proc"
 	"golang.org/x/term"
 )
 
@@ -208,7 +209,7 @@ func (c *Client) attach() error {
 	if saved != nil {
 		_ = term.Restore(fd, saved)
 	}
-	_ = syscall.SetNonblock(fd, false)
+	setBlocking(fd)
 	time.Sleep(300 * time.Millisecond)
 	_ = flushInput(fd)
 	if _, ok := err.(*exec.ExitError); ok {
@@ -323,8 +324,7 @@ func privateTempDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	st, ok := fi.Sys().(*syscall.Stat_t)
-	if !fi.IsDir() || !ok || int(st.Uid) != os.Getuid() || fi.Mode().Perm()&0o077 != 0 {
+	if !fi.IsDir() || !ownedByUs(fi) {
 		return "", fmt.Errorf("%s isn't a private folder of yours: remove it and try again", dir)
 	}
 	return dir, nil
@@ -338,20 +338,10 @@ func sweep(runDir string) {
 	socks, _ := filepath.Glob(filepath.Join(runDir, "clingon-*"))
 	for _, s := range socks {
 		pid, err := strconv.Atoi(strings.TrimPrefix(filepath.Base(s), "clingon-"))
-		if err == nil && syscall.Kill(pid, 0) == syscall.ESRCH && !listening(s) {
+		if err == nil && !proc.Alive(pid) && !listening(s) {
 			_ = os.Remove(s)
 		}
 	}
-}
-
-// listening reports whether a server accepts connections on unix socket path.
-func listening(path string) bool {
-	fd, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
-	if err != nil {
-		return true // can't tell: leave it be
-	}
-	defer func() { _ = syscall.Close(fd) }()
-	return syscall.Connect(fd, &syscall.SockaddrUnix{Name: path}) == nil
 }
 
 // escape stops tmux treating a trailing ';' in an argument as a command

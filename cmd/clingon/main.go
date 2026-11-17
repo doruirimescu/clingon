@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -169,6 +170,9 @@ func launch() error {
 	}
 	if err := shell.Check(os.Getenv("SHELL")); err != nil {
 		return err
+	}
+	if runtime.GOOS == "windows" {
+		return errors.New("clingon's window (menu beside a shell) is macOS-only for now: on Windows, `clingon print` works in Git Bash, e.g. eval \"$(clingon print)\"")
 	}
 	// clingon always runs in a window of its own, in its own font (the
 	// packs' logos are in it): from anywhere else, it opens that window.

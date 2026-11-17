@@ -12,11 +12,11 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/con-dog/clingon/internal/config"
 	"github.com/con-dog/clingon/internal/palette"
+	"github.com/con-dog/clingon/internal/proc"
 	"github.com/con-dog/clingon/internal/shell"
 	"github.com/con-dog/clingon/internal/ui"
 )
@@ -227,8 +227,8 @@ func becomeShell() {
 	err := shell.Exec(config.StateDir(), sh) // with clingon's look; only returns if it couldn't
 	sayErr(err)
 	argv0 := "-" + filepath.Base(sh) // a leading dash makes it a login shell
-	_ = syscall.Exec(sh, []string{argv0}, os.Environ())
-	_ = syscall.Exec("/bin/sh", []string{"-sh"}, os.Environ())
+	_ = proc.Exec(sh, []string{argv0}, os.Environ())
+	_ = proc.Exec("/bin/sh", []string{"-sh"}, os.Environ())
 }
 
 // ---- update check ----
@@ -275,7 +275,7 @@ func latestRelease() string {
 		checkOnce.Do(func() { // the menu asks often: one check per run is plenty
 			if self, err := os.Executable(); err == nil {
 				cmd := exec.Command(self, "_check-release")
-				cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true} // outlive the pane
+				proc.Detach(cmd) // outlive the pane
 				if cmd.Start() == nil {
 					go func() { _ = cmd.Wait() }() // reap it, so it doesn't linger as a zombie
 				}

@@ -9,13 +9,13 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/con-dog/clingon/internal/config"
+	"github.com/con-dog/clingon/internal/proc"
 )
 
 // A crash in the menu ends the session and closes the window, so nobody gets
@@ -65,7 +65,7 @@ func collectCrashes() {
 			continue
 		}
 		pid, _ := strconv.Atoi(m[1])
-		if pid != os.Getpid() && syscall.Kill(pid, 0) == nil {
+		if pid != os.Getpid() && proc.Alive(pid) {
 			continue
 		}
 		path := filepath.Join(config.StateDir(), e.Name())

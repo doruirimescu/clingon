@@ -44,6 +44,10 @@ Needs macOS, with zsh or bash. Opens in its own window in Terminal or iTerm2 (Gh
 - **Zero telemetry.** clingon collects nothing. It goes online only to check for a new release, once a day.
 - **The AI** needs an OpenRouter key (add it under **Clingon › AI**, or set `$OPENROUTER_API_KEY`) and runs only when you give it a task. The task, the menu and the shell's screen then go to OpenRouter and the model's maker.
 
+## Windows (Git Bash)
+
+This fork builds on Windows (`go build ./cmd/clingon`). clingon's window (menu beside a shell) needs tmux and macOS's Terminal or iTerm2, so on Windows only the pick-a-command mode works: `eval "$(clingon print)"` in Git Bash, plus the `pack`, `command`, `recipe`, `check` and `welcome` commands. Needs a terminal that gives native programs a console (Git Bash with ConPTY, or prefix with `winpty`).
+
 ## Removing clingon
 
 ```sh

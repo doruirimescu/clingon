@@ -24,10 +24,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/con-dog/clingon/internal/palette"
+	"github.com/con-dog/clingon/internal/proc"
 )
 
 // Clingon Mono's two weights, gzipped (font/build.py writes them beside the
@@ -299,7 +299,7 @@ func Run(p Plan) error {
 			cmd.Env = append(cmd.Env, kv)
 		}
 	}
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	proc.Detach(cmd)
 	if err := cmd.Start(); err != nil {
 		return err
 	}
@@ -368,7 +368,7 @@ func TerminalCloser() (closeWhenDone func()) {
 // it. Best effort: if it can't, the window just stays open.
 func closeWindow(tty, id string) {
 	cmd := exec.Command("osascript", "-e", closeScript, tty, id)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true} // off the tty, or Terminal waits on it
+	proc.Detach(cmd) // off the tty, or Terminal waits on it
 	if cmd.Start() == nil {
 		_ = cmd.Process.Release()
 	}

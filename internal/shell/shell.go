@@ -13,7 +13,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
+
+	"github.com/con-dog/clingon/internal/proc"
 )
 
 // Named one by one, not all:files: setup writes every embedded file over the
@@ -96,7 +97,7 @@ func Exec(base, shell string) error {
 	if err != nil {
 		return err
 	}
-	return syscall.Exec(path, argv, env)
+	return proc.Exec(path, argv, env)
 }
 
 func lookup(env []string, key string) (string, bool) {

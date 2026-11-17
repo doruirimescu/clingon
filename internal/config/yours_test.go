@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"syscall"
 	"testing"
 )
 
@@ -358,7 +357,7 @@ func TestProjectPacksAreTrustedWhole(t *testing.T) {
 		t.Fatalf("a link should be refused: %+v", p)
 	}
 	_ = os.Remove(filepath.Join(dir, "link.md"))
-	if err := syscall.Mkfifo(filepath.Join(dir, "pipe.md"), 0o644); err != nil {
+	if err := mkfifo(filepath.Join(dir, "pipe.md"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if p = FindProject(repo); p.Err == nil {

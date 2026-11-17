@@ -8,7 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
+
+	"github.com/con-dog/clingon/internal/proc"
 )
 
 // A draft is the pack form's work, kept when you leave the form until the
@@ -220,7 +221,7 @@ func SweepSessionFiles() {
 			continue
 		}
 		digits, _, _ := strings.Cut(rest, "-") // ready-123-heard is ready-123's
-		if pid, err := strconv.Atoi(digits); err == nil && pid > 0 && syscall.Kill(pid, 0) == syscall.ESRCH {
+		if pid, err := strconv.Atoi(digits); err == nil && pid > 0 && !proc.Alive(pid) {
 			_ = os.Remove(filepath.Join(dir, e.Name()))
 		}
 	}
